@@ -39,7 +39,7 @@ class UiHarness(
                 var tab by remember { mutableStateOf(AppTab.CAPTURE) }
                 val sized = if (width != null && height != null) Modifier.requiredSize(width, height) else Modifier
                 Box(sized.testTag(VIEWPORT)) {
-                    ProtagonistRoot(vm, tab, onTabSelected = { tab = it }, recordFrameTelemetry = false)
+                    ProtagonistRoot(vm, tab) { tab = it }
                 }
             }
         }

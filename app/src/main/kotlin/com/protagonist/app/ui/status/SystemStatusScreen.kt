@@ -101,7 +101,10 @@ fun SystemStatusScreen(vm: CaptureViewModel) {
             "UI state computations",
             "${s.telemetry.uiStateComputations} (avg ${s.telemetry.uiStateComputeAvgMicros} µs, max ${s.telemetry.uiStateComputeMaxMicros} µs)",
         )
-        KV("UI frames / janky (>32 ms) / worst", "${s.telemetry.uiFrames} / ${s.telemetry.uiJankFrames} / ${s.telemetry.uiFrameWorstMs} ms")
+        KV(
+            "Drawn frames / slow (>32 ms) / worst render",
+            "${s.telemetry.uiFrames} / ${s.telemetry.uiJankFrames} / ${s.telemetry.uiFrameWorstMs} ms",
+        )
         HorizontalDivider(color = ControlColors.Outline)
 
         Title("Build")

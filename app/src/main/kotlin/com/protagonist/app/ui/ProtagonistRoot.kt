@@ -15,9 +15,7 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -55,22 +53,8 @@ fun ProtagonistRoot(
     viewModel: CaptureViewModel,
     selectedTab: AppTab,
     onTabSelected: (AppTab) -> Unit,
-    // Continuous frame sampling keeps Compose permanently busy, so UI tests turn it off.
-    recordFrameTelemetry: Boolean = true,
 ) {
     val ui by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // Performance telemetry: UI frame intervals (durations only).
-    if (recordFrameTelemetry) {
-        LaunchedEffect(Unit) {
-            var last = withFrameMillis { it }
-            while (true) {
-                val now = withFrameMillis { it }
-                viewModel.recordUiFrame(now - last)
-                last = now
-            }
-        }
-    }
 
     BoxWithConstraints(
         Modifier

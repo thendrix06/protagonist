@@ -1,7 +1,11 @@
 package com.protagonist.app
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
+import android.view.FrameMetrics
 import android.view.KeyEvent
+import android.view.Window
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -31,6 +35,29 @@ class MainActivity : ComponentActivity() {
                 ProtagonistRoot(viewModel = viewModel, selectedTab = tab.value, onTabSelected = { tab.value = it })
             }
         }
+    }
+
+    // Performance telemetry from the platform's passive frame metrics: reports only frames that were actually
+    // drawn, and never requests extra frames (an always-on frame loop would keep the UI rendering and drain battery).
+    private val metricsThread by lazy { HandlerThread("frame-metrics").apply { start() } }
+    private val frameMetricsListener =
+        Window.OnFrameMetricsAvailableListener { _, metrics, _ ->
+            viewModel.recordUiFrame(metrics.getMetric(FrameMetrics.TOTAL_DURATION) / 1_000_000)
+        }
+
+    override fun onResume() {
+        super.onResume()
+        window.addOnFrameMetricsAvailableListener(frameMetricsListener, Handler(metricsThread.looper))
+    }
+
+    override fun onPause() {
+        window.removeOnFrameMetricsAvailableListener(frameMetricsListener)
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        metricsThread.quitSafely()
+        super.onDestroy()
     }
 
     /** Optional HID / joystick input. Touch remains fully functional without it. */
