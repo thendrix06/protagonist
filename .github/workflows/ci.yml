@@ -28,7 +28,7 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
-      - uses: android-actions/setup-android@v3
+      # GitHub's ubuntu runners ship the Android SDK (ANDROID_HOME); AGP installs missing platforms itself.
       - name: Lint, tests, debug APK
         run: ./gradlew spotlessCheck test lintDebug assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
@@ -61,3 +61,8 @@ jobs:
           arch: x86_64
           profile: pixel_tablet
           script: ./gradlew connectedDebugAndroidTest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: protagonist-instrumented-reports
+          path: app/build/reports/androidTests/
