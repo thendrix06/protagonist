@@ -25,7 +25,7 @@ import capture.protocol.toWire
 import java.util.PriorityQueue
 
 /**
- * Deterministic simulated capture backend ("Protagonist Simulator").
+ * Deterministic simulated capture backend (the development stand-in for the edge service).
  *
  * Speaks capture-protocol 1.0 as text frames. All behaviour is a pure function of the scenario, the injected
  * [Clock], the commands received and the fault-injection calls, so a given test run is exactly repeatable.
