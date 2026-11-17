@@ -28,7 +28,7 @@ software doesn't change on a rebrand.
 | Robolectric Compose UI tests: scenarios A, C, F (4 viewports), G, H, branding (8 tests) | **Run and passing** |
 | Screenshots of tablet and phone states (`docs/screens/`) | **Rendered** with Robolectric native graphics |
 | Instrumented Compose tests on a tablet emulator (API 35) | **Run and passing in CI** (`instrumented` job) |
-| Screen recording | **Rendered demo videos** in `docs/recording/` (Robolectric frame capture). A recording from a device screen is not done. |
+| Screen recording | **Emulator screen recordings** (tablet + phone) produced by every CI run as artifacts; captioned rendered demos in `docs/recording/` |
 
 ## Build and test
 
@@ -221,7 +221,13 @@ screen. Regenerate them with:
 scripts/make_recording.sh
 ```
 
-A recording from a real device or emulator screen still needs an emulator or device:
+### Emulator screen recordings (CI)
+
+Every CI run records the emulator screen while `DeviceDemoTest` drives a scripted demo of the real app on a
+Pixel Tablet and a Pixel 7 emulator. To watch one, open a run under **Actions**, scroll to **Artifacts**, and
+download `protagonist-screen-recording-tablet` or `-phone`. Each is a zip containing an MP4.
+
+To record manually on your own device or emulator:
 
 ```bash
 adb shell screenrecord --time-limit 60 /sdcard/protagonist.mp4

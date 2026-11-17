@@ -58,9 +58,13 @@ passed all three jobs:
   `connectedDebugAndroidTest`. The same job failed on commit `9dd3365`, before the busy-Compose fix, which
   confirms the tests really execute on the device.
 
-### Not done
+### Screen recordings
 
-- Screen recording. This needs an emulator or device session. Screenshots are in `docs/screens/`.
+- [Run 44175153127](https://github.com/thendrix06/protagonist/actions/runs/44175153127) at commit `023862e`
+  passed all 5 jobs. The on-device UI tests passed on both a Pixel Tablet and a Pixel 7 emulator (API 35).
+- Both jobs uploaded emulator screen recordings of `DeviceDemoTest`: `protagonist-screen-recording-tablet`
+  and `protagonist-screen-recording-phone`.
+- On a device, fixed test viewports are used only when they fit the screen. Robolectric verifies every size.
 
 The Android SDK in the authoring container was extracted from the public `cimg/android` Docker image, with layer
 digests verified, because `dl.google.com` was initially blocked.
