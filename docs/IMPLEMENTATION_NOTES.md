@@ -48,10 +48,19 @@ Label truncation is checked by screenshot review, not by an automated assertion.
 `GetTextLayoutResult` for Material segmented buttons reported an 8px label width even where the label
 visibly fits, so an assertion based on it would only produce false failures.
 
-### Not run
+### CI on GitHub (`thendrix06/protagonist`)
 
-- `connectedDebugAndroidTest` on an emulator or device, and a screen recording. No KVM was available here; the
-  `instrumented` CI job covers this.
+[Run 44168197096](https://github.com/thendrix06/protagonist/actions/runs/44168197096) at commit `93f65fc`
+passed all three jobs:
+- **Core modules (JVM):** `spotlessCheck test`.
+- **Android:** `spotlessCheck test lintDebug assembleDebug`, which includes the Robolectric UI tests.
+- **Instrumented Compose tests:** the shared UI tests ran on an API 35 Pixel Tablet emulator through
+  `connectedDebugAndroidTest`. The same job failed on commit `9dd3365`, before the busy-Compose fix, which
+  confirms the tests really execute on the device.
+
+### Not done
+
+- Screen recording. This needs an emulator or device session. Screenshots are in `docs/screens/`.
 
 The Android SDK in the authoring container was extracted from the public `cimg/android` Docker image, with layer
 digests verified, because `dl.google.com` was initially blocked.

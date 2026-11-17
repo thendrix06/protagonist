@@ -27,7 +27,8 @@ software doesn't change on a rebrand.
 | Android modules: compile, ktlint, Android lint (0 issues in `:app`), debug APK, instrumented-test APK | **Run and passing** |
 | Robolectric Compose UI tests: scenarios A, C, F (4 viewports), G, H, branding (8 tests) | **Run and passing** |
 | Screenshots of tablet and phone states (`docs/screens/`) | **Rendered** with Robolectric native graphics |
-| Instrumented tests on an emulator, screen recording | **Not run**: needs an emulator/device. The `instrumented` CI job runs them on a tablet emulator. |
+| Instrumented Compose tests on a tablet emulator (API 35) | **Run and passing in CI** (`instrumented` job) |
+| Screen recording | **Not done**: needs an emulator/device session |
 
 ## Build and test
 
