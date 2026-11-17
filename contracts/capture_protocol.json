@@ -1,0 +1,150 @@
+{
+  "name": "capture-protocol",
+  "protocolVersion": "1.0",
+  "description": "Control/state protocol between an operator client and a capture backend. Live video travels on a separate channel (see VideoSource). Product-name neutral by design.",
+  "compatibility": {
+    "versionFormat": "MAJOR.MINOR",
+    "supportedMajor": 1,
+    "rules": [
+      "A message whose protocolVersion MAJOR differs from supportedMajor is rejected (critical).",
+      "A higher MINOR within the supported MAJOR is accepted; it may only add optional fields or new message types.",
+      "Unknown optional fields are ignored.",
+      "Unknown message types are ignored but still consume their stream seq.",
+      "A message missing any envelope field or any required payload field is rejected."
+    ]
+  },
+  "transport": {
+    "control": "Reliable, ordered, authenticated, TLS-only bidirectional text channel (e.g. WSS with bearer token). One JSON envelope per text frame.",
+    "video": "Separate low-latency channel; never carries control or state."
+  },
+  "envelope": {
+    "required": {
+      "protocolVersion": "string MAJOR.MINOR",
+      "type": "string message type",
+      "stream": "string: state | control | heartbeat",
+      "seq": "integer >= 1, strictly monotonic per (sender, stream)",
+      "timestampMs": "integer UTC epoch milliseconds at sender",
+      "payload": "object"
+    }
+  },
+  "sequencing": [
+    "The server numbers every 'state' message; the client numbers every 'control' message (clientSeq = seq).",
+    "If a state seq skips, the client discards deltas, sends snapshot_request and applies nothing until a snapshot arrives.",
+    "A snapshot carries lastClientSeqProcessed so the client can reconcile commands that were in flight.",
+    "After a reconnect the client never replays commands; it requests a snapshot and reconciles by idempotencyKey."
+  ],
+  "enums": {
+    "modality": ["visible", "low_light", "thermal", "fused"],
+    "trackState": ["active", "occluded", "lost", "uncertain"],
+    "jobStatus": ["queued", "acquiring", "capturing", "completed", "failed", "cancelled", "rejected"],
+    "sensorHealth": ["ok", "degraded", "invalid", "offline"],
+    "calibration": ["calibrated", "degraded", "unavailable"],
+    "command": ["enqueue", "cancel", "set_mode", "set_sector", "snapshot_request"]
+  },
+  "objects": {
+    "Track": {
+      "required": ["trackId", "eventId", "state", "firstSeenMs", "lastSeenMs", "observedIn"],
+      "optional": ["box", "stateReason", "preview"]
+    },
+    "Box": { "required": ["left", "top", "width", "height"], "optional": [] },
+    "Preview": { "required": ["key", "capturedAtMs"], "optional": [] },
+    "Job": {
+      "required": ["jobId", "idempotencyKey", "trackId", "eventId", "status", "burstLimit", "ttlMs", "createdAtMs", "updatedAtMs", "cancellable"],
+      "optional": ["framesCaptured", "reason"]
+    },
+    "Sensor": { "required": ["modality", "health"], "optional": ["detail"] },
+    "Sensors": { "required": ["sensors", "calibration"], "optional": [] },
+    "Sector": { "required": ["sectorId", "label"], "optional": [] },
+    "Policy": { "required": ["maxBurstLimit", "minTtlMs", "maxTtlMs", "operatorCancelAllowed"], "optional": [] }
+  },
+  "messages": {
+    "snapshot": {
+      "direction": "server->client", "stream": "state",
+      "required": ["sessionId", "lastClientSeqProcessed", "sectors", "modality", "captureAvailable", "policy", "tracks", "jobs", "sensors"],
+      "optional": ["activeSectorId", "captureUnavailableReason"]
+    },
+    "track_update": { "direction": "server->client", "stream": "state", "required": ["track"], "optional": [] },
+    "track_removed": { "direction": "server->client", "stream": "state", "required": ["trackId", "eventId"], "optional": [] },
+    "job_update": { "direction": "server->client", "stream": "state", "required": ["job"], "optional": [] },
+    "sensor_update": { "direction": "server->client", "stream": "state", "required": ["sensors", "calibration"], "optional": [] },
+    "session_update": {
+      "direction": "server->client", "stream": "state",
+      "required": ["modality", "captureAvailable"],
+      "optional": ["activeSectorId", "captureUnavailableReason"]
+    },
+    "command_ack": {
+      "direction": "server->client", "stream": "state",
+      "required": ["clientSeq", "command", "accepted"],
+      "optional": ["idempotencyKey", "jobId", "reason"]
+    },
+    "heartbeat": { "direction": "both", "stream": "heartbeat", "required": [], "optional": [] },
+    "enqueue": {
+      "direction": "client->server", "stream": "control",
+      "required": ["idempotencyKey", "trackId", "eventId", "burstLimit", "ttlMs"], "optional": []
+    },
+    "cancel": { "direction": "client->server", "stream": "control", "required": ["jobId", "idempotencyKey"], "optional": [] },
+    "set_mode": { "direction": "client->server", "stream": "control", "required": ["modality"], "optional": [] },
+    "set_sector": { "direction": "client->server", "stream": "control", "required": ["sectorId"], "optional": [] },
+    "snapshot_request": { "direction": "client->server", "stream": "control", "required": [], "optional": ["reason"] }
+  },
+  "examples": [
+    {
+      "protocolVersion": "1.0", "type": "snapshot", "stream": "state", "seq": 1, "timestampMs": 1763400000000,
+      "payload": {
+        "sessionId": "sess-0001", "lastClientSeqProcessed": 0,
+        "sectors": [{ "sectorId": "N", "label": "North arc" }], "activeSectorId": "N",
+        "modality": "visible", "captureAvailable": true,
+        "policy": { "maxBurstLimit": 20, "minTtlMs": 5000, "maxTtlMs": 120000, "operatorCancelAllowed": true },
+        "tracks": [{
+          "trackId": "S01", "eventId": "EV-1", "state": "active", "firstSeenMs": 1763399990000, "lastSeenMs": 1763400000000,
+          "observedIn": ["visible", "thermal"], "box": { "left": 0.2, "top": 0.5, "width": 0.05, "height": 0.18 }
+        }],
+        "jobs": [],
+        "sensors": { "sensors": [{ "modality": "visible", "health": "ok" }, { "modality": "thermal", "health": "ok" }], "calibration": "calibrated" }
+      }
+    },
+    {
+      "protocolVersion": "1.0", "type": "track_update", "stream": "state", "seq": 2, "timestampMs": 1763400000100,
+      "payload": {
+        "track": {
+          "trackId": "S03", "eventId": "EV-1", "state": "uncertain", "firstSeenMs": 1763399990000, "lastSeenMs": 1763400000100,
+          "observedIn": ["visible"], "stateReason": "Ambiguous reacquisition"
+        }
+      }
+    },
+    {
+      "protocolVersion": "1.0", "type": "command_ack", "stream": "state", "seq": 3, "timestampMs": 1763400000200,
+      "payload": { "clientSeq": 1, "command": "enqueue", "accepted": true, "idempotencyKey": "idem-0000-0001", "jobId": "J-0001" }
+    },
+    {
+      "protocolVersion": "1.0", "type": "job_update", "stream": "state", "seq": 4, "timestampMs": 1763400000300,
+      "payload": {
+        "job": {
+          "jobId": "J-0001", "idempotencyKey": "idem-0000-0001", "trackId": "S01", "eventId": "EV-1", "status": "capturing",
+          "burstLimit": 10, "ttlMs": 30000, "createdAtMs": 1763400000200, "updatedAtMs": 1763400000300, "cancellable": true, "framesCaptured": 3
+        }
+      }
+    },
+    {
+      "protocolVersion": "1.1", "type": "sensor_update", "stream": "state", "seq": 5, "timestampMs": 1763400000400,
+      "payload": { "sensors": [{ "modality": "thermal", "health": "invalid", "detail": "No frames", "futureField": 1 }], "calibration": "unavailable", "someFutureOptionalField": true }
+    },
+    {
+      "protocolVersion": "1.0", "type": "enqueue", "stream": "control", "seq": 1, "timestampMs": 1763400000150,
+      "payload": { "idempotencyKey": "idem-0000-0001", "trackId": "S01", "eventId": "EV-1", "burstLimit": 10, "ttlMs": 30000 }
+    }
+  ],
+  "rejectedExamples": [
+    { "why": "unsupported major version",
+      "message": { "protocolVersion": "2.0", "type": "heartbeat", "stream": "heartbeat", "seq": 1, "timestampMs": 1763400000000, "payload": {} } },
+    { "why": "missing envelope field seq",
+      "message": { "protocolVersion": "1.0", "type": "heartbeat", "stream": "heartbeat", "timestampMs": 1763400000000, "payload": {} } },
+    { "why": "missing required payload field jobId",
+      "message": { "protocolVersion": "1.0", "type": "job_update", "stream": "state", "seq": 9, "timestampMs": 1763400000000,
+        "payload": { "job": { "idempotencyKey": "idem-0000-0001", "trackId": "S01", "eventId": "EV-1", "status": "queued",
+          "burstLimit": 10, "ttlMs": 30000, "createdAtMs": 1763400000200, "updatedAtMs": 1763400000300, "cancellable": true } } } },
+    { "why": "unknown enum value in a required field",
+      "message": { "protocolVersion": "1.0", "type": "track_update", "stream": "state", "seq": 10, "timestampMs": 1763400000000,
+        "payload": { "track": { "trackId": "S01", "eventId": "EV-1", "state": "teleported", "firstSeenMs": 1, "lastSeenMs": 2, "observedIn": [] } } } }
+  ]
+}
