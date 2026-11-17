@@ -16,5 +16,4 @@
     <string name="sector">Sector</string>
     <string name="cancel_job">Cancel</string>
     <string name="simulated_scene">SIMULATED SCENE — NOT A LIVE SENSOR</string>
-    <string name="observation_view_description">Observation view</string>
 </resources>

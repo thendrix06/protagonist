@@ -1,6 +1,7 @@
 package com.protagonist.app.di
 
 import android.content.Context
+import androidx.core.content.edit
 import capture.presentation.OperatorSettings
 import capture.presentation.SettingsStore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,15 +18,14 @@ class SharedPreferencesSettingsStore(
 
     override fun update(transform: (OperatorSettings) -> OperatorSettings) {
         val next = transform(state.value)
-        prefs
-            .edit()
-            .putInt(KEY_BURST, next.burstLimit)
-            .putLong(KEY_TTL, next.ttlMs)
-            .putBoolean(KEY_OCCLUDED, next.allowOccludedEnqueue)
-            .putLong(KEY_PREVIEW, next.previewRetentionMs)
-            .putBoolean(KEY_OVERLAY, next.showUncalibratedOverlay)
-            .putBoolean(KEY_HID, next.hidEnabled)
-            .apply()
+        prefs.edit {
+            putInt(KEY_BURST, next.burstLimit)
+            putLong(KEY_TTL, next.ttlMs)
+            putBoolean(KEY_OCCLUDED, next.allowOccludedEnqueue)
+            putLong(KEY_PREVIEW, next.previewRetentionMs)
+            putBoolean(KEY_OVERLAY, next.showUncalibratedOverlay)
+            putBoolean(KEY_HID, next.hidEnabled)
+        }
         state.value = next
     }
 

@@ -34,8 +34,11 @@ class MainActivity : ComponentActivity() {
     }
 
     /** Optional HID / joystick input. Touch remains fully functional without it. */
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        val input = hid.map(event) ?: return super.dispatchKeyEvent(event)
+    override fun onKeyDown(
+        keyCode: Int,
+        event: KeyEvent,
+    ): Boolean {
+        val input = hid.map(event) ?: return super.onKeyDown(keyCode, event)
         val screen =
             when (tab.value) {
                 AppTab.CAPTURE -> Screen.CAPTURE
@@ -53,6 +56,6 @@ class MainActivity : ComponentActivity() {
         }
         // Ignored results (debounced / blocked) are consumed so they don't trigger default focus navigation twice.
         val consumed = result is HidResult.Ignored && result.reason != HidResult.Reason.DISABLED
-        return consumed || super.dispatchKeyEvent(event)
+        return consumed || super.onKeyDown(keyCode, event)
     }
 }

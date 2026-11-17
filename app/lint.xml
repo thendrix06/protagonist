@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- The adaptive launcher icon must stay in mipmap-anydpi-v26: AGP 9.5's resource merger did not pick up an
+         unversioned mipmap-anydpi folder, so the launcher icon went missing. minSdk is 26, so the qualifier is redundant but harmless. -->
+    <issue id="ObsoleteSdkInt">
+        <ignore path="src/main/res/mipmap-anydpi-v26" />
+    </issue>
+</lint>

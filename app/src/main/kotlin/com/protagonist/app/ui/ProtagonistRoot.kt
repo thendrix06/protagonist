@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import capture.designsystem.ControlColors
@@ -54,16 +55,20 @@ fun ProtagonistRoot(
     viewModel: CaptureViewModel,
     selectedTab: AppTab,
     onTabSelected: (AppTab) -> Unit,
+    // Continuous frame sampling keeps Compose permanently busy, so UI tests turn it off.
+    recordFrameTelemetry: Boolean = true,
 ) {
     val ui by viewModel.uiState.collectAsStateWithLifecycle()
 
     // Performance telemetry: UI frame intervals (durations only).
-    LaunchedEffect(Unit) {
-        var last = withFrameMillis { it }
-        while (true) {
-            val now = withFrameMillis { it }
-            viewModel.recordUiFrame(now - last)
-            last = now
+    if (recordFrameTelemetry) {
+        LaunchedEffect(Unit) {
+            var last = withFrameMillis { it }
+            while (true) {
+                val now = withFrameMillis { it }
+                viewModel.recordUiFrame(now - last)
+                last = now
+            }
         }
     }
 
@@ -106,7 +111,7 @@ fun ProtagonistRoot(
                         Tab(
                             selected = tab == selectedTab,
                             onClick = { onTabSelected(tab) },
-                            text = { Text(stringResource(tab.labelRes), maxLines = 1) },
+                            text = { Text(stringResource(tab.labelRes), maxLines = 2, textAlign = TextAlign.Center) },
                             modifier = Modifier.testTag(tab.tag),
                         )
                     }

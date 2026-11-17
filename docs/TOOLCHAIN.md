@@ -15,7 +15,7 @@ Every pin below was resolved and used in a successful build on 2026-11-17, unles
 | AndroidX test core / ext-junit / runner | 1.7.0 / 1.3.0 / 1.7.0 |
 | kotlinx-coroutines / kotlinx-serialization-json | 1.11.0 / 1.13.0 |
 | OkHttp | 5.5.1 |
-| Robolectric | 4.18 (resolves, but its large runtime jars could not be downloaded in the authoring sandbox; see IMPLEMENTATION_NOTES) |
+| Robolectric | 4.18 (native graphics used for screenshots) |
 | Spotless / ktlint | 8.11.0 / 1.8.0 |
 
 ## Why the root build uses `buildscript {}` for plugins

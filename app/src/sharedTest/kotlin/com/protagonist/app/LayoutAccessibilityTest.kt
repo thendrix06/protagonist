@@ -71,7 +71,10 @@ class LayoutAccessibilityTest {
             val b = node.boundsInRoot
             if (!b.overlaps(viewport)) continue // scrolled out of view
             if (b.width <= 0f || b.height <= 0f) continue
-            assertTrue(b.width >= minPx && b.height >= minPx, "Touch target too small (${node.tag()}): ${b.width}x${b.height}px")
+            // Measure the node's full layout size: boundsInRoot is clipped for partially scrolled-in nodes.
+            val w = node.size.width
+            val ht = node.size.height
+            assertTrue(w >= minPx && ht >= minPx, "Touch target too small (${node.tag()}): ${w}x${ht}px")
             val label =
                 node.config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString() ?: node.config
                     .getOrNull(SemanticsProperties.Text)

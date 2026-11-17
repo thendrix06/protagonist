@@ -2,23 +2,22 @@
 
 ## Results recorded in the authoring environment (2026-11-17)
 
-Environment: Linux container, OpenJDK 21, Gradle 9.9.1 wrapper, Android SDK platform 37. No KVM, so no emulator.
-`gcp.mirrors.maven.org` (Maven Central's mirror for large files) is blocked by the network policy.
+Environment: Linux container, OpenJDK 21, Gradle 9.9.1, AGP 9.5.1, Android SDK platform 37. There was no KVM,
+so no emulator was available.
 
 ### Ran and passed
 
 ```bash
-./gradlew spotlessCheck test assembleDebug assembleDebugAndroidTest -x :app:testDebugUnitTest -x :design-system:testDebugUnitTest
+./gradlew --no-build-cache clean spotlessCheck test lintDebug assembleDebug assembleDebugAndroidTest
 ```
 
-Result: `BUILD SUCCESSFUL`.
-- spotless/ktlint passes on all 8 modules.
-- `app-debug.apk` and the instrumented-test APK build. Building the test APK compiles the shared Compose UI
-  test sources.
-- 66 JVM tests ran, 66 passed:
+Result: `BUILD SUCCESSFUL`, with 228 tasks. 74 tests passed and 0 failed. The 8 skipped tests are the opt-in
+`ScreenshotTest`, which was run separately and also passed.
 
 | Module | Suite | Tests |
 |---|---|---|
+| app | CaptureUiAcceptanceTest (Robolectric Compose: A, C, H, branding) | 4 |
+| app | LayoutAccessibilityTest (Robolectric Compose: F + G at 360×640, 640×360, 960×600, 1366×1024 dp) | 4 |
 | controller-hid | HidCommandMapperTest | 6 |
 | data-remote | ContractTest (against `contracts/capture_protocol.json`) | 9 |
 | data-remote | ProtocolCaptureClientTest (mock transport integration) | 14 |
@@ -28,19 +27,34 @@ Result: `BUILD SUCCESSFUL`.
 | presentation | AcceptanceScenariosTest (A, B, C, D, E, H, HID, ordering, sector; full simulator stack) | 12 |
 | presentation | AccessibilityTokensTest (WCAG contrast, CVD separation, glyph/label uniqueness) | 6 |
 
-A mutation check confirmed that the tests are not vacuous. Disabling idempotency-key reconciliation made
-`reconnectReconcilesByIdempotencyKeyWithoutReplay` fail.
+Android lint reports 0 issues in `:app`. `:design-system` has one warning, `ObsoleteLintCustomCheck`, which
+concerns lint checks bundled in a third-party AAR, not our code.
 
-### Not run yet
+Mutation checks confirmed that the tests are not vacuous:
+- Disabling idempotency-key reconciliation fails the reconnect test.
+- A 40dp queue toggle fails the 48dp touch-target check.
 
-- `:app:testDebugUnitTest`: the Robolectric UI tests `CaptureUiAcceptanceTest` (A, C, H, branding) and
-  `LayoutAccessibilityTest` (F, G at 360x640, 640x360, 960x600 and 1366x1024 dp). Also `lintDebug`, which needs
-  the same test classpath. Maven Central redirects `nativeruntime-dist-compat` and `android-all-instrumented`
-  to `gcp.mirrors.maven.org`, which returns 403 here.
-- `connectedDebugAndroidTest`, screenshots and screen recording, because no emulator is available.
+### Bugs found by running the Android layer for real
+
+These were all fixed:
+- A frame-telemetry loop kept Compose permanently busy. It is now switchable, and UI tests turn it off.
+- Overriding `dispatchKeyEvent` used a restricted AndroidX API. HID input now goes through `onKeyDown`.
+- Plain text rendered black on the dark theme. The theme now provides the content color.
+- "System Status" was truncated on phones.
+- Mode labels were truncated in phone landscape. The compact layout now uses a 2×2 mode grid.
+- The "already has a acquiring job" grammar.
+
+Label truncation is checked by screenshot review, not by an automated assertion. Robolectric's
+`GetTextLayoutResult` for Material segmented buttons reported an 8px label width even where the label
+visibly fits, so an assertion based on it would only produce false failures.
+
+### Not run
+
+- `connectedDebugAndroidTest` on an emulator or device, and a screen recording. No KVM was available here; the
+  `instrumented` CI job covers this.
 
 The Android SDK in the authoring container was extracted from the public `cimg/android` Docker image, with layer
-digests verified, because `dl.google.com` was blocked when work started.
+digests verified, because `dl.google.com` was initially blocked.
 
 ## Design decisions worth knowing
 
@@ -72,6 +86,8 @@ digests verified, because `dl.google.com` was blocked when work started.
 
 ## Deviations from the brief's commit plan
 
+- After the four planned commits, follow-up commits moved to the current toolchain and fixed the issues the first
+  real Android runs exposed.
 - The four commits follow the plan's themes, but the phone layout ships in the same `CaptureScreen.kt` as the
   tablet layout (commit 3), because the responsive switch lives in one place. Commit 4 adds the HID tests,
   acceptance tests, UI tests and these notes.

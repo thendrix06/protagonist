@@ -1,8 +1,10 @@
 package capture.designsystem
 
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import capture.presentation.StatusTokens
@@ -49,6 +51,8 @@ fun ControlTheme(content: @Composable () -> Unit) {
                 outline = ControlColors.Outline,
                 error = ControlColors.Critical,
             ),
-        content = content,
-    )
+    ) {
+        // Plain Text outside a Surface would otherwise default to black on the dark background.
+        CompositionLocalProvider(LocalContentColor provides ControlColors.OnSurface, content = content)
+    }
 }

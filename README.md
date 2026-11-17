@@ -23,10 +23,11 @@ software doesn't change on a rebrand.
 
 | What | Status |
 |---|---|
-| Platform-neutral modules (`:domain`, `:data-remote`, `:data-sim`, `:video`, `:controller-hid`, `:presentation`): build, ktlint, 66 unit/integration/acceptance tests | **Run and passing.** |
-| Android modules (`:app`, `:design-system`): compile, ktlint, debug APK, instrumented-test APK (which also compiles the shared UI tests) | **Run and passing.** |
-| Robolectric Compose UI tests (scenarios A, C, F, G, H, branding), Android lint | **Not yet run.** The authoring sandbox blocks `gcp.mirrors.maven.org`, where Maven Central serves Robolectric's large runtime jars. |
-| Instrumented tests on an emulator, screen captures / recordings | **Not yet run.** No KVM in the authoring sandbox. CI job `instrumented` runs them. |
+| Platform-neutral modules: build, ktlint, 66 unit/integration/acceptance tests | **Run and passing** |
+| Android modules: compile, ktlint, Android lint (0 issues in `:app`), debug APK, instrumented-test APK | **Run and passing** |
+| Robolectric Compose UI tests: scenarios A, C, F (4 viewports), G, H, branding (8 tests) | **Run and passing** |
+| Screenshots of tablet and phone states (`docs/screens/`) | **Rendered** with Robolectric native graphics |
+| Instrumented tests on an emulator, screen recording | **Not run**: needs an emulator/device. The `instrumented` CI job runs them on a tablet emulator. |
 
 ## Build and test
 
@@ -179,22 +180,25 @@ Interfaces and the protocol are documented in `docs/INTERFACES.md`. Release iden
 
 ## Screen captures
 
-Not yet captured (see [Verification status](#verification-status-read-this-first)). Once the Android build runs,
-capture and commit the following under `docs/screens/`:
+Rendered from the real app against the simulator (Robolectric native graphics). Regenerate with:
 
 ```bash
-adb exec-out screencap -p > docs/screens/tablet-capture.png
+./gradlew :app:testDebugUnitTest --tests '*ScreenshotTest*' -Pprotagonist.screenshots=true
 ```
+
+| Tablet (1280×800 dp) | |
+|---|---|
+| S01 highlighted, queue untouched ![](docs/screens/tablet-01-capture-selected.png) | S01–S04 authorized rapidly: four distinct jobs ![](docs/screens/tablet-02-rapid-queue.png) |
+| Thermal sensor invalid: DEGRADED, no live indicator ![](docs/screens/tablet-03-thermal-degraded.png) | Fused without calibration: overlay marked approximate ![](docs/screens/tablet-04-fused-uncalibrated.png) |
+| Link lost after command: UNCONFIRMED, enqueue disabled ![](docs/screens/tablet-05-link-down-unconfirmed.png) | Reconnected: reconciled to J-0001, no resend ![](docs/screens/tablet-06-reconnected-reconciled.png) |
+| Settings ![](docs/screens/tablet-07-settings.png) | System Status ![](docs/screens/tablet-08-system-status.png) |
+
+| Phone portrait (360 dp) | Phone landscape |
+|---|---|
+| ![](docs/screens/phone-01-portrait.png) | ![](docs/screens/phone-02-landscape.png) |
+
+A screen recording still needs an emulator or device:
 
 ```bash
 adb shell screenrecord --time-limit 60 /sdcard/protagonist.mp4
 ```
-
-Capture these states:
-1. Tablet capture with S01 selected.
-2. Rapid queue of S01–S04.
-3. Thermal DEGRADED.
-4. Fused with an uncalibrated overlay.
-5. Link down with an UNCONFIRMED job, then reconnected.
-6. Phone portrait.
-7. Phone landscape.

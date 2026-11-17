@@ -22,6 +22,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // No production signing identity is configured on purpose.
         }
@@ -46,6 +47,13 @@ android {
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
+        unitTests.all { test ->
+            // Opt-in documentation screenshots (ScreenshotTest): -Pprotagonist.screenshots=true
+            if (project.findProperty("protagonist.screenshots") == "true") {
+                test.systemProperty("protagonist.screenshots.dir", rootProject.file("docs/screens").absolutePath)
+                test.outputs.upToDateWhen { false }
+            }
+        }
     }
 
     packaging {

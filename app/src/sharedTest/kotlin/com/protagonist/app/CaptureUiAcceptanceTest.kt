@@ -28,7 +28,9 @@ class CaptureUiAcceptanceTest {
     @get:Rule val rule = createComposeRule()
     private lateinit var h: UiHarness
 
-    @After fun tearDown() = h.close()
+    @After fun tearDown() {
+        if (::h.isInitialized) h.close()
+    }
 
     @Test fun scenarioA_selectionHighlightsEverywhere_addCreatesExactlyOneAckedJob() {
         h = UiHarness(rule).launch(1280.dp, 800.dp)

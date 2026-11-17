@@ -98,7 +98,7 @@ private fun CompactLandscapeCapture(
     Row(Modifier.fillMaxSize().padding(6.dp).testTag("layout_compact_landscape"), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             ObservationView(ui, { vm.onSubjectTapped(it.trackId) }, Modifier.weight(1f).fillMaxWidth())
-            CandidateStrip(ui.subjects, { vm.onSubjectTapped(it.trackId) }, Modifier.fillMaxWidth().height(118.dp), cardWidth = 92.dp)
+            CandidateStrip(ui.subjects, { vm.onSubjectTapped(it.trackId) }, Modifier.fillMaxWidth().height(118.dp))
         }
         Column(
             Modifier.width(260.dp).fillMaxHeight().verticalScroll(rememberScrollState()).testTag("right_panel"),
@@ -107,7 +107,7 @@ private fun CompactLandscapeCapture(
             // ADD TO QUEUE stays at the top of the column: always within thumb reach without scrolling.
             SelectedSubjectCard(ui.selected, compact = true)
             AddToQueueButton(ui.enqueue, vm::onAddToQueue)
-            ControlBar(ui, vm::onModeSelected, vm::onSectorSelected, stacked = true)
+            ControlBar(ui, vm::onModeSelected, vm::onSectorSelected, stacked = true, modeColumns = 2)
             AlertsBar(ui.alerts, ui.feedback, vm::onDismissFeedback)
             CollapsibleQueue(ui, vm)
         }

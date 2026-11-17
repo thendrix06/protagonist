@@ -73,6 +73,10 @@ import capture.presentation.StatusTokens
 import capture.presentation.SubjectUi
 import com.protagonist.app.R
 
+/**
+ * Single-choice mode toggle. [columns] = 4 is one segmented row; [columns] = 2 lays the same four modes out as a
+ * 2x2 grid for narrow side panels so labels are never truncated.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModeToggle(
@@ -80,21 +84,31 @@ fun ModeToggle(
     pending: capture.domain.Modality?,
     onSelect: (Modality) -> Unit,
     modifier: Modifier = Modifier,
+    columns: Int = 4,
 ) {
-    SingleChoiceSegmentedButtonRow(modifier.testTag("mode_toggle")) {
-        Modality.entries.forEachIndexed { index, m ->
-            val isPending = m == pending
-            SegmentedButton(
-                selected = m == current,
-                onClick = { onSelect(m) },
-                shape = SegmentedButtonDefaults.itemShape(index, Modality.entries.size),
-                modifier =
-                    Modifier
-                        .heightIn(min = ControlDimens.MinTouchTarget)
-                        .semantics { if (isPending) stateDescription = "Requested, awaiting backend" }
-                        .testTag("mode_${m.name}"),
-                label = { Text(Labels.modality(m) + if (isPending) "…" else "", maxLines = 1) },
-            )
+    Column(modifier.testTag("mode_toggle"), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Modality.entries.chunked(columns).forEach { rowModes ->
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                rowModes.forEachIndexed { index, m ->
+                    val isPending = m == pending
+                    SegmentedButton(
+                        selected = m == current,
+                        onClick = { onSelect(m) },
+                        shape = SegmentedButtonDefaults.itemShape(index, rowModes.size),
+                        modifier =
+                            Modifier
+                                .heightIn(min = ControlDimens.MinTouchTarget)
+                                .semantics { if (isPending) stateDescription = "Requested, awaiting backend" }
+                                .testTag("mode_${m.name}"),
+                        label = {
+                            Text(
+                                Labels.modality(m) + if (isPending) "…" else "",
+                                maxLines = 1,
+                            )
+                        },
+                    )
+                }
+            }
         }
     }
 }
@@ -391,10 +405,11 @@ fun ControlBar(
     onSector: (SectorId) -> Unit,
     modifier: Modifier = Modifier,
     stacked: Boolean = false,
+    modeColumns: Int = 4,
 ) {
     if (stacked) {
         Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            ModeToggle(ui.modality, ui.pendingModality, onMode, Modifier.fillMaxWidth())
+            ModeToggle(ui.modality, ui.pendingModality, onMode, Modifier.fillMaxWidth(), columns = modeColumns)
             SectorSelector(ui.sectors, ui.activeSector, onSector, Modifier.fillMaxWidth())
         }
     } else {

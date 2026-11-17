@@ -89,7 +89,7 @@ public object EnqueuePolicy {
         if (active != null) {
             return blocked(
                 EnqueueEligibility.BlockReason.ALREADY_QUEUED,
-                "${track.trackId} already has a ${active.status.name.lowercase().replace('_', ' ')} job",
+                "${track.trackId} already has an active job (${active.status.name.lowercase().replace('_', ' ')})",
             )
         }
         return EnqueueEligibility.Allowed
