@@ -30,14 +30,20 @@ class UiHarness(
     val vm = CaptureViewModel(container.stateHolder, container.simulatorControls)
     val sim: FakeCaptureRepository get() = container.repository as FakeCaptureRepository
 
+    /**
+     * Launches the app shell. A fixed [width] x [height] viewport is used only when it fits the device window;
+     * otherwise the app fills the real window (on a phone, a 1280dp viewport would put controls off-screen where
+     * they cannot be tapped). Robolectric's large virtual window always fits.
+     */
     fun launch(
         width: Dp? = null,
         height: Dp? = null,
     ): UiHarness {
+        val fixed = width != null && height != null && fitsWindow(width, height)
         rule.setContent {
             ControlTheme {
                 var tab by remember { mutableStateOf(AppTab.CAPTURE) }
-                val sized = if (width != null && height != null) Modifier.requiredSize(width, height) else Modifier
+                val sized = if (fixed) Modifier.requiredSize(width, height) else Modifier
                 Box(sized.testTag(VIEWPORT)) {
                     ProtagonistRoot(vm, tab) { tab = it }
                 }
@@ -56,6 +62,15 @@ class UiHarness(
 
     companion object {
         const val VIEWPORT = "test_viewport"
+
+        /** True if a [width] x [height] dp viewport fits inside the device's current window. */
+        fun fitsWindow(
+            width: Dp,
+            height: Dp,
+        ): Boolean {
+            val config = ApplicationProvider.getApplicationContext<android.content.Context>().resources.configuration
+            return width.value <= config.screenWidthDp && height.value <= config.screenHeightDp
+        }
     }
 }
 

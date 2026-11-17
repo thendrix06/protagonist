@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.After
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,6 +41,8 @@ class LayoutAccessibilityTest {
         height: Dp,
         expectedLayout: String,
     ) {
+        // Only viewports that fit the device can be verified on it; Robolectric's large window covers all sizes.
+        assumeTrue("${width}x$height viewport does not fit this device", UiHarness.fitsWindow(width, height))
         h = UiHarness(rule).launch(width, height)
         rule.onNodeWithTag(expectedLayout).assertExists()
         val density = rule.density

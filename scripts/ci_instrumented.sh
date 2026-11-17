@@ -8,7 +8,17 @@ OUT="build/device-recording"
 mkdir -p "$OUT"
 
 # 1. The regular instrumented test suite (the demo test skips itself without its argument).
-./gradlew connectedDebugAndroidTest || exit 1
+if ! ./gradlew connectedDebugAndroidTest; then
+  # Print failing tests straight into the CI log (the HTML report is only in the artifact).
+  python3 - <<'PY'
+import glob, xml.etree.ElementTree as ET
+for f in glob.glob("app/build/outputs/androidTest-results/connected/**/*.xml", recursive=True):
+    for tc in ET.parse(f).getroot().iter("testcase"):
+        for bad in list(tc.iter("failure")) + list(tc.iter("error")):
+            print(f"FAILED {tc.get('classname')}.{tc.get('name')}: {(bad.text or '')[:1500]}")
+PY
+  exit 1
+fi
 
 # 2. Install app + test APKs, then record the screen while the demo runs.
 ./gradlew installDebug installDebugAndroidTest || exit 1
