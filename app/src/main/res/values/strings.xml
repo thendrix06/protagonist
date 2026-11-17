@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Product identity. Change here (and only here) to rebrand; protocol and domain code are name-neutral. -->
+    <string name="app_name" translatable="false">Protagonist</string>
+    <string name="subsystem_control" translatable="false">Protagonist Control</string>
+
+    <string name="tab_capture">Capture</string>
+    <string name="tab_settings">Settings</string>
+    <string name="tab_system_status">System Status</string>
+
+    <string name="add_to_queue">ADD TO QUEUE</string>
+    <string name="queue_title">Capture queue</string>
+    <string name="queue_empty">No capture jobs</string>
+    <string name="selected_none">No subject selected. Tap a subject to highlight it.</string>
+    <string name="selection_hint">Selecting only highlights. Use ADD TO QUEUE to authorize a capture.</string>
+    <string name="sector">Sector</string>
+    <string name="cancel_job">Cancel</string>
+    <string name="simulated_scene">SIMULATED SCENE — NOT A LIVE SENSOR</string>
+    <string name="observation_view_description">Observation view</string>
+</resources>
