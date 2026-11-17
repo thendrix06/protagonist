@@ -28,7 +28,7 @@ software doesn't change on a rebrand.
 | Robolectric Compose UI tests: scenarios A, C, F (4 viewports), G, H, branding (8 tests) | **Run and passing** |
 | Screenshots of tablet and phone states (`docs/screens/`) | **Rendered** with Robolectric native graphics |
 | Instrumented Compose tests on a tablet emulator (API 35) | **Run and passing in CI** (`instrumented` job) |
-| Screen recording | **Not done**: needs an emulator/device session |
+| Screen recording | **Rendered demo videos** in `docs/recording/` (Robolectric frame capture). A recording from a device screen is not done. |
 
 ## Build and test
 
@@ -198,7 +198,30 @@ Rendered from the real app against the simulator (Robolectric native graphics). 
 |---|---|
 | ![](docs/screens/phone-01-portrait.png) | ![](docs/screens/phone-02-landscape.png) |
 
-A screen recording still needs an emulator or device:
+### Demo recordings
+
+[`docs/recording/protagonist-tablet.mp4`](docs/recording/protagonist-tablet.mp4) (36 s) and
+[`docs/recording/protagonist-phone.mp4`](docs/recording/protagonist-phone.mp4) (10 s) are captioned recordings of
+a scripted demo of the real app against the simulator. They show:
+- highlight-only selection
+- pending, then acknowledged, then capturing, then completed
+- rapid authorization of four subjects
+- mode switches and the uncalibrated overlay
+- a DEGRADED sensor
+- link loss right after a command, then reconnect and reconciliation without a duplicate
+
+They are rendered with Robolectric frame capture at real timing (about 13 fps), not recorded from a device
+screen. Regenerate them with:
+
+```bash
+./gradlew :app:testDebugUnitTest --tests '*RecordingTest*' -Pprotagonist.recording=true
+```
+
+```bash
+scripts/make_recording.sh
+```
+
+A recording from a real device or emulator screen still needs an emulator or device:
 
 ```bash
 adb shell screenrecord --time-limit 60 /sdcard/protagonist.mp4

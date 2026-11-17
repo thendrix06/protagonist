@@ -53,6 +53,11 @@ android {
                 test.systemProperty("protagonist.screenshots.dir", rootProject.file("docs/screens").absolutePath)
                 test.outputs.upToDateWhen { false }
             }
+            // Opt-in demo recording frames (RecordingTest): -Pprotagonist.recording=true, then scripts/make_recording.sh
+            if (project.findProperty("protagonist.recording") == "true") {
+                test.systemProperty("protagonist.recording.dir", rootProject.file("build/recording").absolutePath)
+                test.outputs.upToDateWhen { false }
+            }
         }
     }
 
