@@ -1,11 +1,11 @@
 # Protagonist pinned toolchain. See docs/TOOLCHAIN.md for the provenance of each pin.
 [versions]
-# Android (Google Maven). Last-known-stable pins; re-validate against Google Maven before release.
-agp = "8.13.0"
-composeBom = "2025.08.00"
-activityCompose = "1.10.1"
-lifecycle = "2.9.2"
-coreKtx = "1.16.0"
+# Android (Google Maven). Latest stable on 2026-11-17.
+agp = "9.5.1"
+composeBom = "2026.09.00"
+activityCompose = "1.13.0"
+lifecycle = "2.11.0"
+coreKtx = "1.19.1"
 androidxTestCore = "1.7.0"
 androidxTestExtJunit = "1.3.0"
 androidxTestRunner = "1.7.0"
@@ -15,12 +15,12 @@ coroutines = "1.11.0"
 serialization = "1.13.0"
 okhttp = "5.5.1"
 junit = "4.13.2"
-robolectric = "4.16"
+robolectric = "4.18"
 spotless = "8.11.0"
 ktlint = "1.8.0"
 # Android SDK levels
-compileSdk = "36"
-targetSdk = "36"
+compileSdk = "37"
+targetSdk = "37"
 minSdk = "26"
 
 [libraries]

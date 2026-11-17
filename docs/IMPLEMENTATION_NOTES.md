@@ -2,17 +2,20 @@
 
 ## Results recorded in the authoring environment (2026-11-17)
 
-Environment: Linux container, OpenJDK 21, Gradle 8.14.3 wrapper. The network policy allowed Maven Central and the
-Gradle Plugin Portal and **denied `dl.google.com`**, which serves all of Google Maven (AGP, AndroidX, Compose). No
-KVM was available, so no emulator could run.
+Environment: Linux container, OpenJDK 21, Gradle 9.9.1 wrapper, Android SDK platform 37. No KVM, so no emulator.
+`gcp.mirrors.maven.org` (Maven Central's mirror for large files) is blocked by the network policy.
 
 ### Ran and passed
 
 ```bash
-./gradlew --no-build-cache -Pprotagonist.android=false clean spotlessCheck test
+./gradlew spotlessCheck test assembleDebug assembleDebugAndroidTest -x :app:testDebugUnitTest -x :design-system:testDebugUnitTest
 ```
 
-Result: `BUILD SUCCESSFUL`, with 52 tasks executed. 66 tests ran: 66 passed, 0 failed, 0 skipped.
+Result: `BUILD SUCCESSFUL`.
+- spotless/ktlint passes on all 8 modules.
+- `app-debug.apk` and the instrumented-test APK build. Building the test APK compiles the shared Compose UI
+  test sources.
+- 66 JVM tests ran, 66 passed:
 
 | Module | Suite | Tests |
 |---|---|---|
@@ -25,39 +28,19 @@ Result: `BUILD SUCCESSFUL`, with 52 tasks executed. 66 tests ran: 66 passed, 0 f
 | presentation | AcceptanceScenariosTest (A, B, C, D, E, H, HID, ordering, sector; full simulator stack) | 12 |
 | presentation | AccessibilityTokensTest (WCAG contrast, CVD separation, glyph/label uniqueness) | 6 |
 
-ktlint 1.8.0 was also run directly over `:app` and `:design-system` sources with zero violations. Spotless covers
-those modules automatically when Android modules are enabled.
+A mutation check confirmed that the tests are not vacuous. Disabling idempotency-key reconciliation made
+`reconnectReconcilesByIdempotencyKeyWithoutReplay` fail.
 
-A mutation check confirmed that the acceptance and integration tests are not vacuous. Disabling
-idempotency-key reconciliation made `reconnectReconcilesByIdempotencyKeyWithoutReplay` fail.
+### Not run yet
 
-### Not run (blocked by the environment)
+- `:app:testDebugUnitTest`: the Robolectric UI tests `CaptureUiAcceptanceTest` (A, C, H, branding) and
+  `LayoutAccessibilityTest` (F, G at 360x640, 640x360, 960x600 and 1366x1024 dp). Also `lintDebug`, which needs
+  the same test classpath. Maven Central redirects `nativeruntime-dist-compat` and `android-all-instrumented`
+  to `gcp.mirrors.maven.org`, which returns 403 here.
+- `connectedDebugAndroidTest`, screenshots and screen recording, because no emulator is available.
 
-```bash
-./gradlew test assembleDebug
-```
-
-This fails while configuring the build:
-
-```
-Could not GET 'https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/8.13.0/gradle-8.13.0.pom'.
-Received status code 403 from server: Forbidden
-```
-
-Consequently, the following have **not** been compiled or executed:
-
-- the `:app` and `:design-system` Kotlin/Compose sources
-- the Robolectric Compose UI tests in `app/src/sharedTest`: `CaptureUiAcceptanceTest` (A, C, H, branding) and
-  `LayoutAccessibilityTest` (F, G at 360×640, 640×360, 960×600 and 1366×1024 dp)
-- the instrumented tests (`connectedDebugAndroidTest`)
-- Android lint, the debug APK, and screenshots or screen recordings
-
-The Android sources were written against stable Compose Material 3 APIs and pass ktlint. Expect a small number of
-compile fixes on the first build. See `docs/TOOLCHAIN.md` for the first-build checklist.
-
-Note also that the Android SDK in the authoring container was extracted from the public `cimg/android` Docker
-image (layer digests verified), because `dl.google.com` was blocked. It was not used for any successful build,
-since AGP itself could not be resolved.
+The Android SDK in the authoring container was extracted from the public `cimg/android` Docker image, with layer
+digests verified, because `dl.google.com` was blocked when work started.
 
 ## Design decisions worth knowing
 

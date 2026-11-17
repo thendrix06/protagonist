@@ -181,7 +181,7 @@ private fun DrawScope.drawScene(
     val step = size.width / 48
     for (i in 0 until 48) {
         val x = i * step
-        val y = horizon - 10f - 18f * sin(i * 0.7f + 1.3f).toFloat() - 8f * sin(i * 1.9f).toFloat()
+        val y = horizon - 10f - 18f * sin(i * 0.7f + 1.3f) - 8f * sin(i * 1.9f)
         drawRect(ground.copy(alpha = 0.9f), topLeft = Offset(x, y), size = androidx.compose.ui.geometry.Size(step + 1, size.height - y))
     }
     // Slow drifting scan line so a frozen stream is visually obvious.

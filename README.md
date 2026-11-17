@@ -23,13 +23,14 @@ software doesn't change on a rebrand.
 
 | What | Status |
 |---|---|
-| Platform-neutral modules (`:domain`, `:data-remote`, `:data-sim`, `:video`, `:controller-hid`, `:presentation`): build, ktlint, 65+ unit/integration/acceptance tests | **Run and passing** in the authoring environment (see `docs/IMPLEMENTATION_NOTES.md` for the exact command and output). |
-| Android modules (`:app`, `:design-system`): compile, Robolectric Compose UI tests, instrumented tests, APK | **Not yet compiled or run.** The authoring environment's network policy blocked Google Maven (`dl.google.com`), which serves AGP, AndroidX and Compose. Run the commands below on a normal workstation or in CI. |
-| Screen captures / recordings of tablet and phone | **Not yet produced** for the same reason. See [Screen captures](#screen-captures). |
+| Platform-neutral modules (`:domain`, `:data-remote`, `:data-sim`, `:video`, `:controller-hid`, `:presentation`): build, ktlint, 66 unit/integration/acceptance tests | **Run and passing.** |
+| Android modules (`:app`, `:design-system`): compile, ktlint, debug APK, instrumented-test APK (which also compiles the shared UI tests) | **Run and passing.** |
+| Robolectric Compose UI tests (scenarios A, C, F, G, H, branding), Android lint | **Not yet run.** The authoring sandbox blocks `gcp.mirrors.maven.org`, where Maven Central serves Robolectric's large runtime jars. |
+| Instrumented tests on an emulator, screen captures / recordings | **Not yet run.** No KVM in the authoring sandbox. CI job `instrumented` runs them. |
 
 ## Build and test
 
-Requirements: JDK 17+ and Android SDK platform 36 with build-tools (set `ANDROID_HOME` or `local.properties`).
+Requirements: JDK 17+ and Android SDK platform 37 with build-tools (set `ANDROID_HOME` or `local.properties`).
 Exact versions are listed in `docs/TOOLCHAIN.md`.
 
 ```bash
