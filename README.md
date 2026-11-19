@@ -54,6 +54,18 @@ Instrumented Compose tests (the same `sharedTest` sources) on a connected device
 ./gradlew connectedDebugAndroidTest
 ```
 
+## Install on a tablet or phone
+
+Every green CI run publishes **`protagonist-debug-apk`** under **Actions → (run) → Artifacts**. It runs fully
+offline against the built-in simulator.
+
+1. Download the artifact and unzip it to get `app-debug.apk`.
+2. Install it with `adb install app-debug.apk`, or copy it to the device and open it there. Opening it on the
+   device requires allowing installs from that source.
+3. Launch **Protagonist**.
+
+The debug build is signed with a throwaway debug key. Use it for evaluation only, not distribution.
+
 ## Run on an emulator
 
 Create and boot a landscape tablet, the primary target:
