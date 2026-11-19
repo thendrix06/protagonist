@@ -34,6 +34,8 @@ include(":data-remote")
 include(":video")
 include(":controller-hid")
 include(":presentation")
+// Reference capture-protocol server (simulator over authenticated WebSocket) for Core integration work.
+include(":core-reference")
 
 if (includeAndroid) {
     include(":design-system")

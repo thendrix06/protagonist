@@ -69,6 +69,18 @@ passed all three jobs:
 The Android SDK in the authoring container was extracted from the public `cimg/android` Docker image, with layer
 digests verified, because `dl.google.com` was initially blocked.
 
+### Production transport over a real socket (`:core-reference`)
+
+`RemoteOverWebSocketTest` runs the production `RemoteCaptureRepository` and `WebSocketControlChannel` (OkHttp)
+against the reference server on localhost. Its 3 tests passed, and stayed stable over 5 repeated runs:
+- connect, sync and complete a job
+- a server-side link drop, followed by reconnect and reconciliation with no resend
+- a wrong token is rejected
+
+These tests found a real bug. The channel did not handle OkHttp's `onClosing`, so after a **server-initiated**
+close it never noticed the link was down and never reconnected. The mock transports could not catch this. It is
+now fixed: the channel completes the close handshake, marks the link down and reconnects.
+
 ## Design decisions worth knowing
 
 1. **One protocol client for simulator and production.** `FakeCaptureRepository` = `ProtocolCaptureClient` +

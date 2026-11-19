@@ -124,6 +124,19 @@ public class WebSocketControlChannel(
             }
         }
 
+        /**
+         * The server initiated the close. OkHttp waits for us to complete the handshake; until then the socket is
+         * half-closed and would never reach onClosed, so the link would look up while no state can arrive.
+         */
+        override fun onClosing(
+            webSocket: WebSocket,
+            code: Int,
+            reason: String,
+        ) {
+            webSocket.close(NORMAL_CLOSURE, null)
+            onDown(webSocket)
+        }
+
         override fun onClosed(
             webSocket: WebSocket,
             code: Int,

@@ -99,6 +99,22 @@ The default build uses the simulator. To point at a real Core endpoint, set `CON
 `app/build.gradle.kts` to a `wss://` URL. Plain `ws://` is rejected. The production video adapter and credential
 provisioning are hardware gates (see `docs/HARDWARE_BACKLOG.md`).
 
+## Reference Core server (for backend integration)
+
+`:core-reference` serves the deterministic simulator over an authenticated WebSocket that speaks
+`contracts/capture_protocol.json`. Use it as a known-good peer while building Protagonist Core, and as the target
+for the app's production transport. The CI tests run the real `RemoteCaptureRepository` and
+`WebSocketControlChannel` against it over a socket: they cover sync, a completed job, a server-side link drop
+with reconnect and reconciliation without resend, and rejection of a wrong token.
+
+```bash
+PROTAGONIST_CORE_TOKEN=change-me-to-16+chars ./gradlew :core-reference:run
+```
+
+It listens on `ws://127.0.0.1:8765/control` and expects the header `Authorization: Bearer <token>`. It speaks
+plain `ws://` only. The app requires `wss://`, so put a TLS terminator in front of the server for device use.
+`PROTAGONIST_CORE_HOST` and `PROTAGONIST_CORE_PORT` override the address.
+
 ## Using the app
 
 * **Capture tab.** A single wide observation view with backend-reported boxes labelled `S01`, `S02`, and so on. Above
@@ -171,6 +187,8 @@ Bindings are data (`AndroidHidAdapter.DEFAULT_BINDINGS`). The app remains fully 
 * `:controller-hid` holds `HidCommandMapper`: debounce plus screen- and state-dependent mapping.
 * `:presentation` holds `CaptureStateHolder`, a pure `CaptureUiReducer`, operator settings, status design tokens
   (glyph, label and color, contrast-tested) and telemetry. The Android `ViewModel` is a thin wrapper around it.
+* `:core-reference` holds the reference capture-protocol server: the simulator over an authenticated
+  WebSocket, for Core integration and transport tests.
 * `:design-system` holds the brand-neutral Compose theme, `StatusChip` and glyphs.
 * `:app` holds the Compose screens, the constructor-injection `AppContainer`, the HID key adapter and the
   launcher identity.

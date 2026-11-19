@@ -9,7 +9,7 @@ simulator path is complete, and the UI and domain code are not expected to chang
 | 2 | Overlay ↔ video time alignment | `ObservationView` + VideoSource | Boxes are drawn at the latest track state. With real video, align by `timestampMs` (frame vs. track update) and expose the skew in System Status. |
 | 3 | **Credential provisioning** for the WSS control channel | `CredentialProvider` in `AppContainer` | Short-lived bearer tokens, device attestation, rotation. Today it returns `null`. |
 | 4 | TLS trust policy (pinning or private CA) | `WebSocketControlChannel` `OkHttpClient` | Decide pinning versus enterprise CA. |
-| 5 | Core protocol conformance | `contracts/capture_protocol.json` | Core must pass the same `ContractTest` vectors. Agree on heartbeat interval, ack timeout (client default 5 s) and snapshot size limits. |
+| 5 | Core protocol conformance | `contracts/capture_protocol.json`, `:core-reference` | Core must pass the same `ContractTest` vectors and should behave like `:core-reference`, the reference WebSocket server whose transport tests pass. Agree on heartbeat interval, ack timeout (client default 5 s) and snapshot size limits. |
 | 6 | Backend capture policy | `CapturePolicy` | Real max burst, TTL bounds and cancel rules come from Core. The client already clamps to them. |
 | 7 | Sensor health semantics | `SensorHealth`, `CalibrationStatus` | Map vendor diagnostics to OK/DEGRADED/INVALID/OFFLINE **in Core**, never in the app. |
 | 8 | Real previews | `PreviewRef` + `EphemeralPreviewCache` | Fetch thumbnails over an authenticated channel into RAM only. Verify nothing reaches disk (StrictMode disk checks and a forensics pass). |
